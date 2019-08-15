@@ -34,7 +34,7 @@ public class TankAI : MonoBehaviour
           // TODO find optimal raycast max distance
           if (!(Physics.Raycast(transform.position, n.vec, 6)) && !ListContainsNode(closed, n))
           {
-            if (!open.Contains(n))
+            if (!ListContainsNode(open, n))
             {
               n.prevNode = current;
               n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
