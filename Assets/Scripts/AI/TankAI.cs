@@ -1,54 +1,70 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class TankAI : MonoBehaviour
 {
-
-  public List<Vector3> m_Path;
-  // Start is called before the first frame update
-  void Awake()
-  {
-    m_Path = new List<Vector3>();
-  }
-
-  // Update is called once per frame
-  void Update()
-  {
-
-  }
-
-  private List<Vector3> FindPath(List<Vector3> map, Vector3 fromVec, Vector3 toVec)
+  public List<Vector3> FindPath(Vector3 fromVec, Vector3 toVec)
   {
     List<Node> open = new List<Node>();
     List<Node> closed = new List<Node>();
     Node from = new Node(fromVec);
-    Node to = new Node(toVec
-);
+    Node to = new Node(toVec);
     open.Add(from);
     List<Vector3> path = new List<Vector3>();
+    float openListG = float.MaxValue;
     while (open.Count > 0)
     {
       Node current = GetCheapestNodeFromList(open);
       open.Remove(current);
       closed.Add(current);
-      current.UpdateValues(GetDistanceFromTo(fromVec, toVec
-));
+      current.UpdateValues(GetDistanceFromTo(fromVec, toVec));
+      // TODO find optimal distance to target
       if (InRange(current.vec, toVec, 6f))
       {
+        // path found
+        Debug.Log("Path found");
         path = BacktrackNodes(current);
         break;
       }
+      else
+      {
+        List<Node> nextNodes = FindNextPossibleNodes(current);
+        foreach (Node n in nextNodes)
+        {
+          // TODO find optimal raycast max distance
+          if (!(Physics.Raycast(transform.position, n.vec, 6)) && !ListContainsNode(closed, n))
+          {
+            if (!open.Contains(n))
+            {
+              n.prevNode = current;
+              n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
+            }
+            else
+            {
+              if (n.g < openListG)
+              {
+                n.prevNode = current;
+                openListG = n.g;
+                n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
+              }
+            }
+          }
+        }
+      }
     }
-
-    // path found
+    Debug.Log("Path length = " + path.Count);
     return path;
   }
 
-  private List<Node> GetNewNodes(Node node)
+  private List<Node> FindNextPossibleNodes(Node node)
   {
     List<Node> newNodes = new List<Node>();
-
+    Vector3 origin = node.vec;
+    for (float angle = 0f; angle < 360f; angle += 45f)
+    {
+      Vector3 nextVec = Quaternion.Euler(0f, angle, 0f) * origin;
+      newNodes.Add(new Node(nextVec));
+    }
     return newNodes;
   }
 
@@ -98,6 +114,13 @@ public class TankAI : MonoBehaviour
     }
     return path;
   }
+
+  private bool ListContainsNode(List<Node> nodes, Node node){
+      foreach(Node n in nodes){
+          if(n.CompareTo(node)) return true;
+      }
+      return false;
+  }
 }
 
 
@@ -125,10 +148,8 @@ class Node
     f = g + h;
   }
 
-  int CompareLength(Node o)
-  {
-    if (vec.magnitude < o.vec.magnitude) return -1;
-    else if (vec.magnitude > o.vec.magnitude) return 1;
-    return 0;
+  public bool CompareTo(Node o){
+      if(vec.x == o.vec.x && vec.y == o.vec.y && vec.z == o.vec.z) return true;
+      return false;
   }
 }
