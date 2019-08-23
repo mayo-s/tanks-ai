@@ -20,7 +20,7 @@ public class TankAI : MonoBehaviour
       Node current = GetCheapestNodeFromList(open);
       open.Remove(current);
       closed.Add(current);
-      current.UpdateValues(GetDistanceFromTo(fromVec, toVec));
+      current.UpdateValues(GetDistanceFromTo(current.vec, toVec));
       // TODO find optimal distance to target
       if (InRange(current.vec, toVec, 4f))
       {

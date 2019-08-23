@@ -20,7 +20,6 @@ public class TankMovement : MonoBehaviour
   private float m_OriginalPitch;
   private TankAI m_TankAI;
   private bool m_AIon = false;
-  private bool m_AIbusy = false;
   private List<Vector3> m_Path;
 
   private void Awake()
