@@ -3,8 +3,11 @@ using UnityEngine;
 
 public class TankAI : MonoBehaviour
 {
+  public bool m_AIbusy = false;
   public List<Vector3> FindPath(Vector3 fromVec, Vector3 toVec)
   {
+    m_AIbusy = true;
+    Debug.Log("TankAI is busy");
     List<Node> open = new List<Node>();
     List<Node> closed = new List<Node>();
     Node from = new Node(fromVec);
@@ -19,7 +22,7 @@ public class TankAI : MonoBehaviour
       closed.Add(current);
       current.UpdateValues(GetDistanceFromTo(fromVec, toVec));
       // TODO find optimal distance to target
-      if (InRange(current.vec, toVec, 6f))
+      if (InRange(current.vec, toVec, 4f))
       {
         // path found
         Debug.Log("Path found");
@@ -38,6 +41,7 @@ public class TankAI : MonoBehaviour
             {
               n.prevNode = current;
               n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
+              open.Add(n);
             }
             else
             {
@@ -52,19 +56,24 @@ public class TankAI : MonoBehaviour
         }
       }
     }
-    Debug.Log("Path length = " + path.Count);
+    Debug.Log("Done. Path length = " + path.Count);
+    m_AIbusy = false;
     return path;
   }
 
   private List<Node> FindNextPossibleNodes(Node node)
   {
+    Debug.Log("Find possible neighbors");
     List<Node> newNodes = new List<Node>();
     Vector3 origin = node.vec;
     for (float angle = 0f; angle < 360f; angle += 45f)
     {
-      Vector3 nextVec = Quaternion.Euler(0f, angle, 0f) * origin;
+      Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * origin).normalized + origin;
       newNodes.Add(new Node(nextVec));
     }
+    // foreach(Node n in newNodes){
+    //   Debug.Log(n.vec);
+    // }
     return newNodes;
   }
 
@@ -115,11 +124,13 @@ public class TankAI : MonoBehaviour
     return path;
   }
 
-  private bool ListContainsNode(List<Node> nodes, Node node){
-      foreach(Node n in nodes){
-          if(n.CompareTo(node)) return true;
-      }
-      return false;
+  private bool ListContainsNode(List<Node> nodes, Node node)
+  {
+    foreach (Node n in nodes)
+    {
+      if (n.CompareTo(node)) return true;
+    }
+    return false;
   }
 }
 
@@ -148,8 +159,9 @@ class Node
     f = g + h;
   }
 
-  public bool CompareTo(Node o){
-      if(vec.x == o.vec.x && vec.y == o.vec.y && vec.z == o.vec.z) return true;
-      return false;
+  public bool CompareTo(Node o)
+  {
+    if (vec.x == o.vec.x && vec.y == o.vec.y && vec.z == o.vec.z) return true;
+    return false;
   }
 }
