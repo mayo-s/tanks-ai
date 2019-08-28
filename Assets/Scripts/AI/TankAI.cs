@@ -14,66 +14,77 @@ public class TankAI : MonoBehaviour
     Node to = new Node(toVec);
     open.Add(from);
     List<Vector3> path = new List<Vector3>();
-    float openListG = float.MaxValue;
     while (open.Count > 0)
     {
       Node current = GetCheapestNodeFromList(open);
       open.Remove(current);
       closed.Add(current);
-      current.UpdateValues(GetDistanceFromTo(current.vec, toVec));
       // TODO find optimal distance to target
-      if (InRange(current.vec, toVec, 4f))
+      if (InRange(current.vec, toVec, 2f))
       {
         // path found
         Debug.Log("Path found");
         path = BacktrackNodes(current);
         break;
       }
-      else
+      List<Node> nextNodes = FindNextPossibleNodes(current);
+      foreach (Node n in nextNodes)
       {
-        List<Node> nextNodes = FindNextPossibleNodes(current);
-        foreach (Node n in nextNodes)
+        Vector3 startRay = current.vec;
+        startRay.y = 0.1f;
+        Vector3 endRay = n.vec;
+        endRay.y = 0.1f;
+        // TODO find optimal raycast max distance
+        if (!(Physics.Raycast(startRay, endRay, 4)) && !ListContainsNode(closed, n))
         {
-          // TODO find optimal raycast max distance
-          if (!(Physics.Raycast(transform.position, n.vec, 6)) && !ListContainsNode(closed, n))
+          if (!ListContainsNode(open, n))
           {
-            if (!ListContainsNode(open, n))
+            n.prevNode = current;
+            n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
+            open.Add(n);
+          }
+          else
+          {
+            if (n.g > current.g + 1)
             {
               n.prevNode = current;
               n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
-              open.Add(n);
-            }
-            else
-            {
-              if (n.g < openListG)
-              {
-                n.prevNode = current;
-                openListG = n.g;
-                n.UpdateValues(GetDistanceFromTo(n.vec, toVec));
-              }
             }
           }
         }
+        else Debug.DrawRay(startRay, endRay, Color.red);
       }
     }
-    Debug.Log("Done. Path length = " + path.Count);
+    printPath(path);
     m_AIbusy = false;
     return path;
   }
 
+  private void printPath(List<Vector3> path)
+  {
+
+    string route = "Path found - " + path.Count + " nodes\n";
+    Vector3 cubesize = new Vector3(0.5f, 0.5f, 0.5f);
+    foreach (Vector3 v in path)
+    {
+      route += v + "\n";
+      GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+      cube.transform.position = v;
+      cube.transform.localScale = cubesize;
+    }
+    route += "____________END____________";
+    Debug.Log(route);
+  }
+
   private List<Node> FindNextPossibleNodes(Node node)
   {
-    Debug.Log("Find possible neighbors");
     List<Node> newNodes = new List<Node>();
     Vector3 origin = node.vec;
     for (float angle = 0f; angle < 360f; angle += 45f)
     {
-      Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * origin).normalized + origin;
+      Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1, 0, 0)).normalized + origin;
       newNodes.Add(new Node(nextVec));
     }
-    // foreach(Node n in newNodes){
-    //   Debug.Log(n.vec);
-    // }
     return newNodes;
   }
 
@@ -94,8 +105,7 @@ public class TankAI : MonoBehaviour
 
   private bool InRange(Vector3 from, Vector3 to, float maxRange)
   {
-    if (GetVectorFromTo(from, to).sqrMagnitude < maxRange * maxRange) return true;
-    return false;
+    return (GetVectorFromTo(from, to).sqrMagnitude < maxRange * maxRange);
   }
 
   private Node GetCheapestNodeFromList(List<Node> nodes)
@@ -104,9 +114,9 @@ public class TankAI : MonoBehaviour
     float cost = float.MaxValue;
     foreach (Node n in nodes)
     {
-      if (n.h < cost)
+      if (n.f < cost)
       {
-        cost = n.h;
+        cost = n.f;
         cheapastNode = n;
       }
     }
@@ -128,7 +138,10 @@ public class TankAI : MonoBehaviour
   {
     foreach (Node n in nodes)
     {
-      if (n.CompareTo(node)) return true;
+      if (InRange(n.vec, node.vec, 0.5f))
+      {
+        return true;
+      }
     }
     return false;
   }
@@ -148,13 +161,7 @@ class Node
 
   public void UpdateValues(float heuristic)
   {
-    Node prev = prevNode;
-    g = 0;
-    while (prev != null)
-    {
-      g += prevNode.vec.magnitude;
-      prev = prev.prevNode;
-    }
+    g = prevNode.g + 1;
     h = heuristic;
     f = g + h;
   }
