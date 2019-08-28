@@ -139,6 +139,7 @@ public class TankMovement : MonoBehaviour
   {
     m_AIon = !m_AIon;
     Debug.Log("AI " + m_AIon);
+    // Clear path when turning AI off
     if (!m_AIon) m_Path.Clear();
   }
 }
