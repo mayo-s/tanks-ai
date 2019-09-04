@@ -4,6 +4,7 @@ using UnityEngine;
 public class TankAI : MonoBehaviour
 {
   public bool m_AIbusy = false;
+  public LayerMask layermask;
   public List<Vector3> FindPath(Vector3 fromVec, Vector3 toVec)
   {
     m_AIbusy = true;
@@ -31,11 +32,12 @@ public class TankAI : MonoBehaviour
       foreach (Node n in nextNodes)
       {
         Vector3 startRay = current.vec;
-        startRay.y = 0.1f;
+        startRay.y = 0f;
         Vector3 endRay = n.vec;
-        endRay.y = 0.1f;
+        endRay.y = 0f;
+        float maxDistance = 8f;
         // TODO find optimal raycast max distance
-        if (!(Physics.Raycast(startRay, endRay, 4)) && !ListContainsNode(closed, n))
+        if (!(Physics.Raycast(startRay, endRay, maxDistance, layermask)) && !ListContainsNode(closed, n))
         {
           if (!ListContainsNode(open, n))
           {
@@ -52,7 +54,6 @@ public class TankAI : MonoBehaviour
             }
           }
         }
-        else Debug.DrawRay(startRay, endRay, Color.red);
       }
     }
     printPath(path);
@@ -62,15 +63,14 @@ public class TankAI : MonoBehaviour
 
   private void printPath(List<Vector3> path)
   {
-
     string route = "Path found - " + path.Count + " nodes\n";
-    Vector3 cubesize = new Vector3(0.5f, 0.5f, 0.5f);
     foreach (Vector3 v in path)
     {
       route += v + "\n";
       GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+      Destroy(cube.GetComponent<Collider>());
       cube.transform.position = v;
-      cube.transform.localScale = cubesize;
+      cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
     }
     route += "____________END____________";
     Debug.Log(route);
@@ -80,9 +80,10 @@ public class TankAI : MonoBehaviour
   {
     List<Node> newNodes = new List<Node>();
     Vector3 origin = node.vec;
-    for (float angle = 0f; angle < 360f; angle += 45f)
+    for (float angle = 0f; angle < 360f; angle += 20f)
     {
-      Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1, 0, 0)).normalized + origin;
+      Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1f, 0f, 0f)).normalized + origin;
+      // Debug.Log("origin " + origin + " next " + nextVec + "angle " + angle);
       newNodes.Add(new Node(nextVec));
     }
     return newNodes;
@@ -131,6 +132,8 @@ public class TankAI : MonoBehaviour
       path.Insert(0, node.vec);
       node = node.prevNode;
     }
+    // remove first, because it's current position
+    path.RemoveAt(0);
     return path;
   }
 

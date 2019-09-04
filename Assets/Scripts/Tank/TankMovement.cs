@@ -121,7 +121,7 @@ public class TankMovement : MonoBehaviour
   private void MoveAI()
   {
     // Adjust the position of the tank
-    if (m_Path.Count > 0) m_MovementInputValue = 1;
+    if (m_Path.Count > 0) m_MovementInputValue = 0.5f;
     else m_MovementInputValue = 0;
     Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
     m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
@@ -129,12 +129,21 @@ public class TankMovement : MonoBehaviour
 
   private void TurnAI()
   {
-    // Adjust the rotation of the tank.
-    float turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
-    Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
-    m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
+    // Adjust tank rotation.
+    if (m_Path.Count > 0 && InRange(transform.position, m_Path[0], 1f)) {
+      Quaternion turnRotation = Quaternion.Euler(m_Path[0]);
+      m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
+      // transform.position = Vector3.MoveTowards (transform.position, m_Path[0], 1 * Time.deltaTime);
+      if(Vector3.Dot(transform.position, m_Path[0]) >= 0.9f) {
+        m_Path.RemoveAt(0);
+        Debug.Log("next waypoint");
+      }
+    }
   }
-
+  private bool InRange(Vector3 from, Vector3 to, float maxRange)
+  {
+    return ((to - from).sqrMagnitude < maxRange * maxRange);
+  }
   private void activateAI()
   {
     m_AIon = !m_AIon;
