@@ -21,12 +21,17 @@ public class TankMovement : MonoBehaviour
   private TankAI m_TankAI;
   private bool m_AIon = false;
   private List<Vector3> m_Path;
+  private GameObject m_TargetPointObj;
+  private Transform m_TargetPoint;
+
 
   private void Awake()
   {
     m_Rigidbody = GetComponent<Rigidbody>();
     m_TankAI = GetComponent<TankAI>();
     m_Path = new List<Vector3>();
+    m_TargetPointObj = new GameObject();
+    m_TargetPoint = m_TargetPointObj.transform;
   }
 
   private void OnEnable()
@@ -98,8 +103,10 @@ public class TankMovement : MonoBehaviour
     }
     else
     {
-      MoveAI();
-      TurnAI();
+      if(m_Path.Count > 0){
+        m_TargetPoint.position = m_Path[0];
+        Follow();
+      }
     }
   }
 
@@ -118,28 +125,20 @@ public class TankMovement : MonoBehaviour
     m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
   }
 
-  private void MoveAI()
-  {
-    // Adjust the position of the tank
-    if (m_Path.Count > 0) m_MovementInputValue = 0.5f;
-    else m_MovementInputValue = 0;
-    Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
-    m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
-  }
+void Follow(){
+         // rotate towards target
+         transform.forward = Vector3.RotateTowards(transform.forward, m_TargetPoint.position - transform.position, m_TurnSpeed*Time.deltaTime, 0.0f);
+ 
+         // move towards target
+         transform.position = Vector3.MoveTowards(transform.position, m_TargetPoint.position,   m_Speed*Time.deltaTime);
+ 
+         if(InRange(transform.position, m_TargetPoint.position, 2f))
+         {
+             m_Path.RemoveAt(0);
+             m_TargetPoint.position = m_Path[0];
+         }
+     } 
 
-  private void TurnAI()
-  {
-    // Adjust tank rotation.
-    if (m_Path.Count > 0 && InRange(transform.position, m_Path[0], 1f)) {
-      Quaternion turnRotation = Quaternion.Euler(m_Path[0]);
-      m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
-      // transform.position = Vector3.MoveTowards (transform.position, m_Path[0], 1 * Time.deltaTime);
-      if(Vector3.Dot(transform.position, m_Path[0]) >= 0.9f) {
-        m_Path.RemoveAt(0);
-        Debug.Log("next waypoint");
-      }
-    }
-  }
   private bool InRange(Vector3 from, Vector3 to, float maxRange)
   {
     return ((to - from).sqrMagnitude < maxRange * maxRange);
