@@ -21,7 +21,7 @@ public class TankAI : MonoBehaviour
       open.Remove(current);
       closed.Add(current);
       // TODO find optimal distance to target
-      if (InRange(current.vec, toVec, 2f))
+      if (InRange(current.vec, toVec, 1f) || path.Count >= 20)
       {
         // path found
         Debug.Log("Path found");
@@ -35,7 +35,7 @@ public class TankAI : MonoBehaviour
         startRay.y = 0f;
         Vector3 endRay = n.vec;
         endRay.y = 0f;
-        float maxDistance = 8f;
+        float maxDistance = 10f;
         // TODO find optimal raycast max distance
         if (!(Physics.Raycast(startRay, endRay, maxDistance, layermask)) && !ListContainsNode(closed, n))
         {
@@ -80,7 +80,7 @@ public class TankAI : MonoBehaviour
   {
     List<Node> newNodes = new List<Node>();
     Vector3 origin = node.vec;
-    for (float angle = 0f; angle < 360f; angle += 20f)
+    for (float angle = 0f; angle < 360f; angle += 45f)
     {
       Vector3 nextVec = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1f, 0f, 0f)).normalized + origin;
       // Debug.Log("origin " + origin + " next " + nextVec + "angle " + angle);

@@ -103,7 +103,8 @@ public class TankMovement : MonoBehaviour
     }
     else
     {
-      if(m_Path.Count > 0){
+      if (m_Path.Count > 0)
+      {
         m_TargetPoint.position = m_Path[0];
         Follow();
       }
@@ -125,19 +126,20 @@ public class TankMovement : MonoBehaviour
     m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
   }
 
-void Follow(){
-         // rotate towards target
-         transform.forward = Vector3.RotateTowards(transform.forward, m_TargetPoint.position - transform.position, m_TurnSpeed*Time.deltaTime, 0.0f);
- 
-         // move towards target
-         transform.position = Vector3.MoveTowards(transform.position, m_TargetPoint.position,   m_Speed*Time.deltaTime);
- 
-         if(InRange(transform.position, m_TargetPoint.position, 2f))
-         {
-             m_Path.RemoveAt(0);
-             m_TargetPoint.position = m_Path[0];
-         }
-     } 
+  void Follow()
+  {
+    // rotate towards target
+    transform.forward = Vector3.RotateTowards(transform.forward, m_TargetPoint.position - transform.position, m_TurnSpeed * Time.deltaTime, 0.0f);
+
+    // move towards target
+    transform.position = Vector3.MoveTowards(transform.position, m_TargetPoint.position, m_Speed * Time.deltaTime);
+
+    if (InRange(transform.position, m_TargetPoint.position, 2f))
+    {
+      m_Path.RemoveAt(0);
+      m_TargetPoint.position = m_Path[0];
+    }
+  }
 
   private bool InRange(Vector3 from, Vector3 to, float maxRange)
   {
