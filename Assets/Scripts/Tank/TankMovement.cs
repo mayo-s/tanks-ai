@@ -134,7 +134,7 @@ public class TankMovement : MonoBehaviour
     if (InRange(transform.position, m_TargetPoint.position, 0.5f))
     {
       m_TankAI.m_Path.RemoveAt(0);
-      m_TargetPoint.position = m_TankAI.m_Path[0];
+      if(m_TankAI.m_Path.Count > 0) m_TargetPoint.position = m_TankAI.m_Path[0];
     }
   }
 
