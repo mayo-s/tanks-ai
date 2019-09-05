@@ -62,6 +62,9 @@ public class TankManager
   // TODO make list for multiple opponents
   public void UpdateOpponentPosition(Vector3 pos, int player)
   {
-    if (m_PlayerNumber != player) m_Movement.m_OpponentPosition = pos;
+    if (m_PlayerNumber != player) {
+      m_Movement.m_OpponentPosition = pos;
+      m_Shooting.m_OpponentPosition = pos;
+    }
   }
 }

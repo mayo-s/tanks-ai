@@ -3,12 +3,20 @@ using UnityEngine;
 
 public class TankAI : MonoBehaviour
 {
+
+  public bool m_AIon = false;
   public bool m_AIbusy = false;
+
+  public bool m_AIaiming = false;
+  public List<Vector3> m_Path = new List<Vector3>();
   public LayerMask layermask;
-  public List<Vector3> FindPath(Vector3 fromVec, Vector3 toVec)
+  public void FindPath(Vector3 fromVec, Vector3 toVec)
   {
     m_AIbusy = true;
-    Debug.Log("TankAI is busy");
+    // better double check
+    m_Path.Clear();
+
+    // a* implementation
     List<Node> open = new List<Node>();
     List<Node> closed = new List<Node>();
     Node from = new Node(fromVec);
@@ -31,13 +39,14 @@ public class TankAI : MonoBehaviour
       List<Node> nextNodes = FindNextPossibleNodes(current);
       foreach (Node n in nextNodes)
       {
-        Vector3 startRay = current.vec;
-        startRay.y = 0f;
-        Vector3 endRay = n.vec;
-        endRay.y = 0f;
+        Vector3 start = current.vec;
+        start.y = 0f;
+        Vector3 end = n.vec;
+        end.y = 0f;
         float maxDistance = 10f;
         // TODO find optimal raycast max distance
-        if (!(Physics.Raycast(startRay, endRay, maxDistance, layermask)) && !ListContainsNode(closed, n))
+        // if (!(Physics.Raycast(start, end, maxDistance, layermask)) && !ListContainsNode(closed, n))
+        if(!Physics.Linecast(start, end) && !ListContainsNode(closed, n))
         {
           if (!ListContainsNode(open, n))
           {
@@ -56,9 +65,9 @@ public class TankAI : MonoBehaviour
         }
       }
     }
-    printPath(path);
+    // printPath(path);
     m_AIbusy = false;
-    return path;
+    m_Path = path;
   }
 
   private void printPath(List<Vector3> path)
@@ -147,6 +156,14 @@ public class TankAI : MonoBehaviour
       }
     }
     return false;
+  }
+
+  public void activateAI()
+  {
+    m_AIon = !m_AIon;
+    Debug.Log("AI " + m_AIon);
+    // Clear path when turning AI off
+    if (!m_AIon) m_Path.Clear();
   }
 }
 

@@ -19,8 +19,6 @@ public class TankMovement : MonoBehaviour
   private float m_TurnInputValue;
   private float m_OriginalPitch;
   private TankAI m_TankAI;
-  private bool m_AIon = false;
-  private List<Vector3> m_Path;
   private GameObject m_TargetPointObj;
   private Transform m_TargetPoint;
 
@@ -29,7 +27,6 @@ public class TankMovement : MonoBehaviour
   {
     m_Rigidbody = GetComponent<Rigidbody>();
     m_TankAI = GetComponent<TankAI>();
-    m_Path = new List<Vector3>();
     m_TargetPointObj = new GameObject();
     m_TargetPoint = m_TargetPointObj.transform;
   }
@@ -44,7 +41,7 @@ public class TankMovement : MonoBehaviour
   private void OnDisable()
   {
     m_Rigidbody.isKinematic = true;
-    m_Path.Clear();
+    m_TankAI.m_Path.Clear();
   }
 
   private void Start()
@@ -61,10 +58,10 @@ public class TankMovement : MonoBehaviour
     // Store the player's input and make sure the audio for the engine is playing.
     m_MovementInputValue = Input.GetAxis(m_MovementAxisName);
     m_TurnInputValue = Input.GetAxis(m_TurnAxisName);
-    if (Input.GetKeyDown(KeyCode.I)) activateAI();
-    if (m_AIon && !m_TankAI.m_AIbusy && m_Path.Count <= 0)
+    if (Input.GetKeyDown(KeyCode.I)) m_TankAI.activateAI();
+    if (m_TankAI.m_AIon && !m_TankAI.m_AIbusy && m_TankAI.m_Path.Count <= 0)
     {
-      m_Path = m_TankAI.FindPath(m_Rigidbody.position, m_OpponentPosition);
+      m_TankAI.FindPath(m_Rigidbody.position, m_OpponentPosition);
     }
     EngineAudio();
   }
@@ -96,16 +93,16 @@ public class TankMovement : MonoBehaviour
   private void FixedUpdate()
   {
     // Move and turn the tank.
-    if (!m_AIon)
+    if (!m_TankAI.m_AIon)
     {
       Move();
       Turn();
     }
     else
     {
-      if (m_Path.Count > 0)
+      if (m_TankAI.m_Path.Count > 0)
       {
-        m_TargetPoint.position = m_Path[0];
+        m_TargetPoint.position = m_TankAI.m_Path[0];
         Follow();
       }
     }
@@ -134,22 +131,15 @@ public class TankMovement : MonoBehaviour
     // move towards target
     transform.position = Vector3.MoveTowards(transform.position, m_TargetPoint.position, m_Speed * Time.deltaTime);
 
-    if (InRange(transform.position, m_TargetPoint.position, 2f))
+    if (InRange(transform.position, m_TargetPoint.position, 0.5f))
     {
-      m_Path.RemoveAt(0);
-      m_TargetPoint.position = m_Path[0];
+      m_TankAI.m_Path.RemoveAt(0);
+      m_TargetPoint.position = m_TankAI.m_Path[0];
     }
   }
 
   private bool InRange(Vector3 from, Vector3 to, float maxRange)
   {
     return ((to - from).sqrMagnitude < maxRange * maxRange);
-  }
-  private void activateAI()
-  {
-    m_AIon = !m_AIon;
-    Debug.Log("AI " + m_AIon);
-    // Clear path when turning AI off
-    if (!m_AIon) m_Path.Clear();
   }
 }
