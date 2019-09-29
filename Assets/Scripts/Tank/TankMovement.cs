@@ -10,8 +10,8 @@ public class TankMovement : MonoBehaviour
   public AudioClip m_EngineIdling;
   public AudioClip m_EngineDriving;
   public float m_PitchRange = 0.2f;
-  public Vector3 m_OpponentPosition;
-  public bool m_Passive = false;
+  [HideInInspector] public Vector3 m_OpponentPosition;
+  [HideInInspector] public bool m_Passive = false;
 
   private string m_MovementAxisName;
   private string m_TurnAxisName;
@@ -22,7 +22,6 @@ public class TankMovement : MonoBehaviour
   private TankAI m_TankAI;
   private GameObject m_TargetPointObj;
   private Transform m_TargetPoint;
-
   private Vector3 m_Hideout;
 
 

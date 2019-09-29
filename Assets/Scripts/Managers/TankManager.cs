@@ -13,7 +13,7 @@ public class TankManager
 
   private TankMovement m_Movement;
   private TankShooting m_Shooting;
-  public TankHealth m_Health;
+  [HideInInspector] public TankHealth m_Health;
   private GameObject m_CanvasGameObject;
 
   public void Setup()
@@ -54,7 +54,7 @@ public class TankManager
 
   public void Reset()
   {
-    while(!RndmSpwnPnt());
+    while (!RndmSpwnPnt()) ;
     m_Instance.transform.position = m_SpawnPoint.position;
     m_Instance.transform.rotation = m_SpawnPoint.rotation;
 
@@ -78,13 +78,14 @@ public class TankManager
     for (float angle = 0f; angle < 360f; angle += 20f)
     {
       Vector3 to = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1f, 0f, 0f)).normalized + pos;
-      if(Physics.Linecast(pos, to)) return false;
+      if (Physics.Linecast(pos, to)) return false;
     }
     m_SpawnPoint.position = pos;
     return true;
   }
 
-  public void setTactic(bool tactic){
+  public void setTactic(bool tactic)
+  {
     m_Movement.m_Passive = tactic;
   }
 }

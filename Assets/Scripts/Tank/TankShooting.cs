@@ -13,7 +13,7 @@ public class TankShooting : MonoBehaviour
   public float m_MinLaunchForce = 15f;
   public float m_MaxLaunchForce = 30f;
   public float m_MaxChargeTime = 0.75f;
-  public Vector3 m_OpponentPosition;
+  [HideInInspector] public Vector3 m_OpponentPosition;
 
   private TankAI m_TankAI;
   private string m_FireButton;

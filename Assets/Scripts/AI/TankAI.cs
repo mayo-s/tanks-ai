@@ -4,13 +4,13 @@ using UnityEngine;
 public class TankAI : MonoBehaviour
 {
 
-  public bool m_AIon = false;
-  public bool m_AIbusy = false;
+  [HideInInspector] public bool m_AIon = false;
+  [HideInInspector] public bool m_AIbusy = false;
 
-  public bool m_AIaiming = false;
-  public List<Vector3> m_Path = new List<Vector3>();
-  public LayerMask layermask;
-  public void FindPath(Vector3 fromVec, Vector3 toVec)
+  [HideInInspector] public bool m_AIaiming = false;
+  [HideInInspector] public List<Vector3> m_Path = new List<Vector3>();
+  [HideInInspector] public LayerMask layermask;
+  [HideInInspector] public void FindPath(Vector3 fromVec, Vector3 toVec)
   {
     m_AIbusy = true;
     // better double check
