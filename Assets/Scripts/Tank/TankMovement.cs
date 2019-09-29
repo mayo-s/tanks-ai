@@ -11,6 +11,7 @@ public class TankMovement : MonoBehaviour
   public AudioClip m_EngineDriving;
   public float m_PitchRange = 0.2f;
   public Vector3 m_OpponentPosition;
+  public bool m_Passive = false;
 
   private string m_MovementAxisName;
   private string m_TurnAxisName;
@@ -22,6 +23,8 @@ public class TankMovement : MonoBehaviour
   private GameObject m_TargetPointObj;
   private Transform m_TargetPoint;
 
+  private Vector3 m_Hideout;
+
 
   private void Awake()
   {
@@ -29,6 +32,7 @@ public class TankMovement : MonoBehaviour
     m_TankAI = GetComponent<TankAI>();
     m_TargetPointObj = new GameObject();
     m_TargetPoint = m_TargetPointObj.transform;
+    m_Hideout = new Vector3(0f, 0f, 0f);
   }
 
   private void OnEnable()
@@ -61,7 +65,7 @@ public class TankMovement : MonoBehaviour
     if (Input.GetKeyDown(KeyCode.I)) m_TankAI.activateAI();
     if (m_TankAI.m_AIon && !m_TankAI.m_AIbusy && m_TankAI.m_Path.Count <= 0)
     {
-      m_TankAI.FindPath(m_Rigidbody.position, m_OpponentPosition);
+      AI();
     }
     EngineAudio();
   }
@@ -134,12 +138,47 @@ public class TankMovement : MonoBehaviour
     if (InRange(transform.position, m_TargetPoint.position, 0.5f))
     {
       m_TankAI.m_Path.RemoveAt(0);
-      if(m_TankAI.m_Path.Count > 0) m_TargetPoint.position = m_TankAI.m_Path[0];
+      if (m_TankAI.m_Path.Count > 0) m_TargetPoint.position = m_TankAI.m_Path[0];
     }
   }
 
   private bool InRange(Vector3 from, Vector3 to, float maxRange)
   {
     return ((to - from).sqrMagnitude < maxRange * maxRange);
+  }
+
+  private void AI()
+  {
+    float distance = 20f;
+    if (!m_Passive)
+    {
+      m_TankAI.FindPath(m_Rigidbody.position, m_OpponentPosition);
+    }
+    else
+    {
+      if (InRange(transform.position, m_Hideout, 1f))
+      {
+        m_TankAI.FindPath(m_Rigidbody.position, hideoutPnt(distance));
+      }
+    }
+  }
+
+  private Vector3 hideoutPnt(float distance)
+  {
+
+    Vector3 pos = new Vector3(0f, 0f, 0f);
+    float magnitude = 0f;
+    while (magnitude < distance)
+    {
+      pos = new Vector3(UnityEngine.Random.Range(-45f, 45f), 0f, UnityEngine.Random.Range(-45f, 45f));
+      magnitude = (pos - m_OpponentPosition).magnitude;
+    }
+    for (float angle = 0f; angle < 360f; angle += 45f)
+    {
+      Vector3 to = (Quaternion.Euler(0f, angle, 0f) * new Vector3(1f, 0f, 0f)).normalized + pos;
+      if (Physics.Linecast(pos, to)) return new Vector3(0f, 0f, 0f);
+    }
+
+    return pos;
   }
 }

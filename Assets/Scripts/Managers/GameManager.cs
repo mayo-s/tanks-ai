@@ -81,6 +81,7 @@ public class GameManager : MonoBehaviour
     ResetAllTanks();
     DisableTankControl();
     UpdateOpponents();
+    Tactics();
     m_CameraControl.SetStartPositionAndSize();
     m_RoundNumber++;
     m_MessageText.text = "ROUND " + m_RoundNumber;
@@ -97,6 +98,7 @@ public class GameManager : MonoBehaviour
     while (!OneTankLeft())
     {
       UpdateOpponents();
+      Tactics();
       yield return null;
     }
 
@@ -110,6 +112,28 @@ public class GameManager : MonoBehaviour
       {
         m_Tanks[i].UpdateOpponentPosition(tank.m_Instance.transform.position, tank.m_PlayerNumber);
       }
+    }
+  }
+
+  private void Tactics()
+  {
+    // based on 2 tanks
+    TankManager t1 = m_Tanks[0];
+    TankManager t2 = m_Tanks[1];
+    if (t1.m_Health.GetCurrentHealth() < 40f && t1.m_Health.GetCurrentHealth() < t2.m_Health.GetCurrentHealth())
+    {
+      t1.setTactic(true);
+      t2.setTactic(false);
+    }
+    else if (t2.m_Health.GetCurrentHealth() < 40f && t1.m_Health.GetCurrentHealth() > t2.m_Health.GetCurrentHealth())
+    {
+      t2.setTactic(true);
+      t1.setTactic(false);
+    }
+    else
+    {
+      t1.setTactic(false);
+      t2.setTactic(false);
     }
   }
 
@@ -206,7 +230,6 @@ public class GameManager : MonoBehaviour
       m_Tanks[i].EnableControl();
     }
   }
-
 
   private void DisableTankControl()
   {

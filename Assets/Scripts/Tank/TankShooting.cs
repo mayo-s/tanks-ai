@@ -42,7 +42,6 @@ public class TankShooting : MonoBehaviour
 
   private void Update()
   {
-    RaycastHit hit;
     if (!m_TankAI.m_AIon)
     {
       // Track the current state of the fire button and make decisions based on the current launch force.
@@ -70,10 +69,9 @@ public class TankShooting : MonoBehaviour
         Fire();
       }
     }
-    // else if (Physics.Raycast(transform.position, m_OpponentPosition, out hit, 30f))
     else if (!Physics.Linecast(transform.position, m_OpponentPosition) && (m_OpponentPosition - transform.position).magnitude < 30f)
     {
-      if (Timer())
+      if (ShootingDelay())
       {
         m_TankAI.m_AIaiming = true;
         m_CurrentLaunchForce = (m_OpponentPosition - transform.position).magnitude;
@@ -97,10 +95,10 @@ public class TankShooting : MonoBehaviour
     m_CurrentLaunchForce = m_MinLaunchForce;
   }
 
-  private bool Timer()
+  private bool ShootingDelay()
   {
 
-    if (Time.realtimeSinceStartup - m_LastShootAction > 0.5f) return true;
+    if (Time.realtimeSinceStartup - m_LastShootAction > 2f) return true;
     return false;
   }
 }
