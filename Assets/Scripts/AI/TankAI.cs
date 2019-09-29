@@ -23,29 +23,26 @@ public class TankAI : MonoBehaviour
     Node to = new Node(toVec);
     open.Add(from);
     List<Vector3> path = new List<Vector3>();
-    while (open.Count > 0)
+    while (open.Count > 0 && path.Count <= 10)
     {
       Node current = GetCheapestNodeFromList(open);
       open.Remove(current);
       closed.Add(current);
       // TODO find optimal distance to target
-      if (InRange(current.vec, toVec, 1f) || path.Count >= 20)
+      if (InRange(current.vec, toVec, 1f))
       {
         // path found
         Debug.Log("Path found");
         path = BacktrackNodes(current);
         break;
       }
-      List<Node> nextNodes = FindNextPossibleNodes(current);
+      List<Node> nextNodes = NextNodes(current);
       foreach (Node n in nextNodes)
       {
         Vector3 start = current.vec;
         start.y = 0f;
         Vector3 end = n.vec;
         end.y = 0f;
-        float maxDistance = 10f;
-        // TODO find optimal raycast max distance
-        // if (!(Physics.Raycast(start, end, maxDistance, layermask)) && !ListContainsNode(closed, n))
         if(!Physics.Linecast(start, end) && !ListContainsNode(closed, n))
         {
           if (!ListContainsNode(open, n))
@@ -85,7 +82,7 @@ public class TankAI : MonoBehaviour
     Debug.Log(route);
   }
 
-  private List<Node> FindNextPossibleNodes(Node node)
+  private List<Node> NextNodes(Node node)
   {
     List<Node> newNodes = new List<Node>();
     Vector3 origin = node.vec;
@@ -184,11 +181,5 @@ class Node
     g = prevNode.g + 1;
     h = heuristic;
     f = g + h;
-  }
-
-  public bool CompareTo(Node o)
-  {
-    if (vec.x == o.vec.x && vec.y == o.vec.y && vec.z == o.vec.z) return true;
-    return false;
   }
 }
